@@ -75,7 +75,12 @@ public class FallingBlock : MonoBehaviour
 
     void DestroyBlock()
     {
-        blockManager.SpawnBlockDestroyEffect(transform.position, blockData);
+        if (blockManager.IsBlockOnScreen(transform.position))
+        {
+            blockManager.SpawnBlockDestroyEffect(transform.position, blockData);
+            blockManager.SpawnLoot(transform.position, blockData);
+        }
+
         Destroy(gameObject);
     }
 }

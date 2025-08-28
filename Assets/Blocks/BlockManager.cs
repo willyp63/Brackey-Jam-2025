@@ -527,36 +527,37 @@ public class BlockManager : MonoBehaviour
         {
             Vector3 worldPosition = tilemap.GetCellCenterWorld(position);
             SpawnBlockDestroyEffect(worldPosition, block.blockData);
-
-            if (block.blockData.minGoldDrop > 0)
-            {
-                int goldDrop = Random.Range(
-                    block.blockData.minGoldDrop,
-                    block.blockData.maxGoldDrop + 1
-                );
-                for (int i = 0; i < goldDrop; i++)
-                {
-                    Vector3 goldNugWorldPosition =
-                        worldPosition
-                        + new Vector3(Random.Range(-0.25f, 0.25f), Random.Range(-0.25f, 0.25f), 0);
-
-                    GameObject goldNug = Instantiate(
-                        goldNugPrefab,
-                        goldNugWorldPosition,
-                        Quaternion.identity
-                    );
-                    Rigidbody2D rigidbody = goldNug.GetComponent<Rigidbody2D>();
-                    rigidbody.AddForce(
-                        new Vector2(Random.Range(-2, 2), Random.Range(-2, 2)),
-                        ForceMode2D.Impulse
-                    );
-                    Loot loot = goldNug.GetComponent<Loot>();
-                    loot.Initialize(player);
-                }
-            }
+            SpawnLoot(worldPosition, block.blockData);
         }
 
         RemoveTile(position);
+    }
+
+    public void SpawnLoot(Vector3 worldPosition, BlockData blockData)
+    {
+        if (blockData.minGoldDrop <= 0)
+            return;
+
+        int goldDrop = Random.Range(blockData.minGoldDrop, blockData.maxGoldDrop + 1);
+        for (int i = 0; i < goldDrop; i++)
+        {
+            Vector3 goldNugWorldPosition =
+                worldPosition
+                + new Vector3(Random.Range(-0.25f, 0.25f), Random.Range(-0.25f, 0.25f), 0);
+
+            GameObject goldNug = Instantiate(
+                goldNugPrefab,
+                goldNugWorldPosition,
+                Quaternion.identity
+            );
+            Rigidbody2D rigidbody = goldNug.GetComponent<Rigidbody2D>();
+            rigidbody.AddForce(
+                new Vector2(Random.Range(-2, 2), Random.Range(-2, 2)),
+                ForceMode2D.Impulse
+            );
+            Loot loot = goldNug.GetComponent<Loot>();
+            loot.Initialize(player);
+        }
     }
 
     public void SpawnBlockDestroyEffect(Vector3 worldPosition, BlockData blockData)
@@ -815,18 +816,18 @@ public class BlockManager : MonoBehaviour
         return closestPoint;
     }
 
-    /// <summary>
-    /// Checks if a block at the given grid position is visible on screen
-    /// </summary>
-    /// <param name="gridPosition">The grid position of the block to check</param>
-    /// <returns>True if the block is visible on screen, false otherwise</returns>
     private bool IsBlockOnScreen(Vector3Int gridPosition)
+    {
+        // Convert grid position to world position
+        Vector3 worldPosition = tilemap.GetCellCenterWorld(gridPosition);
+
+        return IsBlockOnScreen(worldPosition);
+    }
+
+    public bool IsBlockOnScreen(Vector3 worldPosition)
     {
         if (Camera.main == null)
             return false;
-
-        // Convert grid position to world position
-        Vector3 worldPosition = tilemap.GetCellCenterWorld(gridPosition);
 
         // Get the camera's viewport bounds in world coordinates
         Vector3 screenPoint = Camera.main.WorldToViewportPoint(worldPosition);

@@ -64,6 +64,8 @@ public class BlockManager : MonoBehaviour
     public float damageInterval = 5f;
     public float damageIntervalDecreaseAmount = 0.1f;
 
+    public int numTopEmptyLayers = 9;
+
     [Header("Gold Drop Settings")]
     public GameObject goldNugPrefab;
 
@@ -181,6 +183,8 @@ public class BlockManager : MonoBehaviour
         // RemoveBlocksAroundPlayer();
 
         RemoveTopLayers();
+
+        AddSpawnPlatform();
 
         // Add perimeter barriers
         AddPerimeterBarriers();
@@ -457,11 +461,22 @@ public class BlockManager : MonoBehaviour
     {
         for (int x = 0; x < worldWidth; x++)
         {
-            for (int y = worldHeight - 1; y > worldHeight - 8; y--)
+            for (int y = worldHeight - 1; y > worldHeight - numTopEmptyLayers; y--)
             {
                 Vector3Int position = new Vector3Int(x, y, 0);
                 RemoveTile(position);
             }
+        }
+    }
+
+    void AddSpawnPlatform()
+    {
+        for (int x = -2; x < 2; x++)
+        {
+            AddTile(
+                new Vector3Int(worldWidth / 2 + x, worldHeight - numTopEmptyLayers, 0),
+                barrierBlock
+            );
         }
     }
 

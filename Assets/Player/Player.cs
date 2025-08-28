@@ -117,6 +117,8 @@ public class Player : MonoBehaviour
     private float originalDrag;
     private Color originalColor;
     private ShakeBehavior damageShakeEffect;
+    private bool isInLava = false;
+    private float lastLavaDamageTime = 0f;
 
     private int health = 0;
     private int maxHealth = 4;
@@ -164,30 +166,35 @@ public class Player : MonoBehaviour
         health -= damage;
         onHealthChanged?.Invoke();
 
-        StartCoroutine(HurtAnimation());
+        bool isDead = health <= 0;
+        StartCoroutine(HurtAnimation(isDead));
 
-        if (health <= 0)
+        if (isDead)
         {
             onDeath?.Invoke();
         }
     }
 
-    IEnumerator HurtAnimation()
+    IEnumerator HurtAnimation(bool isDead)
     {
         Time.timeScale = 0.2f;
-        animator.SetTrigger("Hurt");
+        animator.SetTrigger(isDead ? "Death" : "Hurt");
         spriteRenderer.color = hurtColor;
         damageShakeEffect.Shake();
 
         yield return new WaitForSecondsRealtime(0.2f);
 
         Time.timeScale = 1f;
-        animator.SetTrigger("EndHurt");
+        if (!isDead)
+            animator.SetTrigger("EndHurt");
         spriteRenderer.color = originalColor;
     }
 
     void Update()
     {
+        if (health <= 0)
+            return;
+
         // Get input
         moveInput = Input.GetAxisRaw("Horizontal");
 
@@ -196,6 +203,12 @@ public class Player : MonoBehaviour
         // {
         //     Jump();
         // }
+
+        if (isInLava && Time.time > lastLavaDamageTime + 0.5f)
+        {
+            TakeDamage(1);
+            lastLavaDamageTime = Time.time;
+        }
 
         if ((Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.W)) && energy > 0.1f)
         {
@@ -466,6 +479,8 @@ public class Player : MonoBehaviour
         {
             Debug.Log("Player entered lava");
             rb.drag = originalDrag * 50f;
+            isInLava = true;
+            lastLavaDamageTime = 0f;
         }
     }
 
@@ -475,6 +490,7 @@ public class Player : MonoBehaviour
         {
             Debug.Log("Player left lava");
             rb.drag = originalDrag;
+            isInLava = false;
         }
     }
 }

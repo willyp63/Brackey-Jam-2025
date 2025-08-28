@@ -110,18 +110,6 @@ public class FallingBlock : MonoBehaviour
         return true;
     }
 
-    // 0.03125
-    // 0.0625
-    // 0.09375
-    // 0.125
-    // 0.15625
-    // 0.1875
-    // 0.21875
-    // 0.25
-    // 0.28125
-    // 0.3125
-    // 0.34375
-
     void OnTriggerEnter2D(Collider2D other)
     {
         if (other.gameObject.GetComponent<Lava>() != null)

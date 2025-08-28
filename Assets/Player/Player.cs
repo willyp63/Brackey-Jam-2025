@@ -116,6 +116,7 @@ public class Player : MonoBehaviour
     private float lastFireTime = 0f;
     private float originalDrag;
     private Color originalColor;
+    private ShakeBehavior damageShakeEffect;
 
     private int health = 0;
     private int maxHealth = 4;
@@ -142,6 +143,7 @@ public class Player : MonoBehaviour
         originalDrag = rb.drag;
         originalColor = spriteRenderer.color;
         jumpGlow.SetActive(false);
+        damageShakeEffect = Camera.main.GetComponent<ShakeBehavior>();
 
         energy = maxEnergy;
         health = maxHealth;
@@ -172,9 +174,14 @@ public class Player : MonoBehaviour
 
     IEnumerator HurtAnimation()
     {
+        Time.timeScale = 0.2f;
         animator.SetTrigger("Hurt");
         spriteRenderer.color = hurtColor;
-        yield return new WaitForSeconds(0.15f);
+        damageShakeEffect.Shake();
+
+        yield return new WaitForSecondsRealtime(0.2f);
+
+        Time.timeScale = 1f;
         animator.SetTrigger("EndHurt");
         spriteRenderer.color = originalColor;
     }
@@ -212,7 +219,7 @@ public class Player : MonoBehaviour
             rb.gravityScale = originalGravityScale;
             jumpGlow.SetActive(false);
 
-            if (Time.time > lastFireTime + fireRate && !Input.GetMouseButton(0))
+            if (Time.time > lastFireTime + fireRate + 0.2f)
             {
                 energy += Time.deltaTime * energyRegenRate;
                 energy = Mathf.Clamp(energy, 0, maxEnergy);

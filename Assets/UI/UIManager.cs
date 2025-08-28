@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -20,16 +21,29 @@ public class UIManager : MonoBehaviour
     [SerializeField]
     private List<Image> energyFrameImages;
 
+    [SerializeField]
+    private List<TextMeshProUGUI> goldTexts;
+
     public void Start()
     {
         player.onHealthChanged += UpdateHealthUI;
+        player.onGoldChanged += UpdateGoldUI;
         UpdateHealthUI();
         UpdateEnergyUISprites();
+        UpdateGoldUI();
     }
 
     public void Update()
     {
         UpdateEnergyUI();
+    }
+
+    public void UpdateGoldUI()
+    {
+        for (int i = 0; i < goldTexts.Count; i++)
+        {
+            goldTexts[i].text = player.Gold.ToString("N0");
+        }
     }
 
     public void UpdateEnergyUI()

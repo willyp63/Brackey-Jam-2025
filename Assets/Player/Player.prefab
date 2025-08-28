@@ -74,7 +74,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: -1
   m_Sprite: {fileID: 21300000, guid: 5b173d01047d6a140be0b1f3a3c116e1, type: 3}
-  m_Color: {r: 0.05490196, g: 1, b: 0, a: 1}
+  m_Color: {r: 0, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -339,7 +339,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: -880458850, guid: 10e5cf9726121fb4abea3d80d0b73565, type: 3}
-  m_Color: {r: 0.05199492, g: 1, b: 0, a: 1}
+  m_Color: {r: 0, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -465,7 +465,7 @@ MonoBehaviour:
   projectileDamage: 25
   fireRate: 0.2
   canFireContinuously: 1
-  projectileEnergyCost: 0.1
+  projectileEnergyCost: 0.025
   pickupRadius: 3
   pickupForce: 0.05
   energyRegenRate: 0.66
@@ -724,7 +724,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 2
   m_Sprite: {fileID: 21300000, guid: 5b173d01047d6a140be0b1f3a3c116e1, type: 3}
-  m_Color: {r: 0.05490196, g: 1, b: 0, a: 1}
+  m_Color: {r: 0, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0

@@ -26,7 +26,7 @@ public class Loot : MonoBehaviour
             float distance = Vector2.Distance(transform.position, player.transform.position);
             if (distance < 0.2f)
             {
-                // TODO: give player loot
+                player.AddGold(1);
                 Destroy(gameObject);
             }
             else if (distance < player.PickupRadius)
@@ -41,6 +41,14 @@ public class Loot : MonoBehaviour
             {
                 rb.gravityScale = originalGravityScale;
             }
+        }
+    }
+
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.GetComponent<Lava>() != null)
+        {
+            Destroy(gameObject);
         }
     }
 }

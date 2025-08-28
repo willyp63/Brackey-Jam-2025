@@ -111,17 +111,21 @@ public class Player : MonoBehaviour
     private float originalDrag;
 
     private int health = 0;
-    private int maxHealth = 3;
+    private int maxHealth = 4;
     public int Health => health;
     public int MaxHealth => maxHealth;
 
     private float energy = 0;
-    private int maxEnergy = 3;
+    private int maxEnergy = 4;
     public float Energy => energy;
     public int MaxEnergy => maxEnergy;
 
+    private int gold = 0;
+    public int Gold => gold;
+
     public System.Action onDeath;
     public System.Action onHealthChanged;
+    public System.Action onGoldChanged;
 
     void Start()
     {
@@ -134,6 +138,15 @@ public class Player : MonoBehaviour
         energy = maxEnergy;
         health = maxHealth;
         onHealthChanged?.Invoke();
+
+        gold = 0;
+        onGoldChanged?.Invoke();
+    }
+
+    public void AddGold(int amount)
+    {
+        gold += amount;
+        onGoldChanged?.Invoke();
     }
 
     public void TakeDamage(int damage)
@@ -180,7 +193,7 @@ public class Player : MonoBehaviour
             rb.gravityScale = originalGravityScale;
             jumpGlow.SetActive(false);
 
-            if (Time.time > lastFireTime + fireRate)
+            if (Time.time > lastFireTime + fireRate && !Input.GetMouseButton(0))
             {
                 energy += Time.deltaTime * energyRegenRate;
                 energy = Mathf.Clamp(energy, 0, maxEnergy);

@@ -100,6 +100,12 @@ public class Player : MonoBehaviour
     [SerializeField]
     private GameObject jumpGlow;
 
+    [SerializeField]
+    private SpriteRenderer spriteRenderer;
+
+    [SerializeField]
+    private Color hurtColor = Color.red;
+
     private Rigidbody2D rb;
     private Animator animator;
     private bool isGrounded;
@@ -109,6 +115,7 @@ public class Player : MonoBehaviour
     private float originalGravityScale;
     private float lastFireTime = 0f;
     private float originalDrag;
+    private Color originalColor;
 
     private int health = 0;
     private int maxHealth = 4;
@@ -133,6 +140,7 @@ public class Player : MonoBehaviour
         animator = GetComponent<Animator>();
         originalGravityScale = rb.gravityScale;
         originalDrag = rb.drag;
+        originalColor = spriteRenderer.color;
         jumpGlow.SetActive(false);
 
         energy = maxEnergy;
@@ -154,10 +162,21 @@ public class Player : MonoBehaviour
         health -= damage;
         onHealthChanged?.Invoke();
 
+        StartCoroutine(HurtAnimation());
+
         if (health <= 0)
         {
             onDeath?.Invoke();
         }
+    }
+
+    IEnumerator HurtAnimation()
+    {
+        animator.SetTrigger("Hurt");
+        spriteRenderer.color = hurtColor;
+        yield return new WaitForSeconds(0.15f);
+        animator.SetTrigger("EndHurt");
+        spriteRenderer.color = originalColor;
     }
 
     void Update()

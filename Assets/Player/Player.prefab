@@ -223,7 +223,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3973042471560943450}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.1559, y: -0.156, z: 0}
+  m_LocalPosition: {x: 0.15625, y: -0.15625, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -256,7 +256,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4309080317795744052}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.0628, y: -0.156, z: 0}
+  m_LocalPosition: {x: -0.0625, y: -0.15625, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -423,7 +423,7 @@ Transform:
   - {fileID: 1035288499965579832}
   - {fileID: 6188432293711685065}
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &6755968693095986587
 MonoBehaviour:
@@ -471,6 +471,8 @@ MonoBehaviour:
   energyRegenRate: 0.66
   energyDrainRate: 1
   jumpGlow: {fileID: 4419634933917850436}
+  spriteRenderer: {fileID: 1299309684889584598}
+  hurtColor: {r: 1, g: 0.627451, b: 0.627451, a: 1}
 --- !u!70 &8753529675070199819
 CapsuleCollider2D:
   m_ObjectHideFlags: 0

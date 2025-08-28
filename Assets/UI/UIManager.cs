@@ -36,6 +36,11 @@ public class UIManager : MonoBehaviour
     public void Update()
     {
         UpdateEnergyUI();
+
+        if (Input.GetKeyDown(KeyCode.H))
+        {
+            player.TakeDamage(1);
+        }
     }
 
     public void UpdateGoldUI()

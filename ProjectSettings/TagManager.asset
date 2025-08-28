@@ -18,7 +18,7 @@ TagManager:
   - Enemy Projectile
   - Loot
   - Lava
-  - 
+  - Falling Wall
   - 
   - 
   - 
@@ -46,4 +46,7 @@ TagManager:
     locked: 0
   - name: Block
     uniqueID: 614578329
+    locked: 0
+  - name: Lava
+    uniqueID: 1055841149
     locked: 0

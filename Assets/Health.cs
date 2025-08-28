@@ -23,6 +23,17 @@ public class Health : MonoBehaviour
         currentHealth = maxHealth;
     }
 
+    public void SetMaxHealth(float maxHealth)
+    {
+        this.maxHealth = maxHealth;
+        currentHealth = maxHealth;
+    }
+
+    public void SetHealth(float health)
+    {
+        currentHealth = health;
+    }
+
     public bool TakeDamage(float damage, bool ignoreInvulnerability = false)
     {
         // Don't take damage if dead

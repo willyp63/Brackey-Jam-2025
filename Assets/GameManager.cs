@@ -8,8 +8,11 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private Light2D globalLight;
 
+    [SerializeField]
+    private float lightIntensity = 1f;
+
     void Start()
     {
-        globalLight.intensity = 0f;
+        globalLight.intensity = lightIntensity;
     }
 }

@@ -67,6 +67,11 @@ public class BlockManager : MonoBehaviour
     [Header("Gold Drop Settings")]
     public GameObject goldNugPrefab;
 
+    [Header("Falling Block Settings")]
+    public GameObject fallingBlockPrefab;
+    public float fallingBlockInterval = 3f;
+    public int blocksToFallPerInterval = 12;
+
     private Dictionary<Vector3Int, Block> blockMap = new();
 
     private Dictionary<BlockData, TileBase> tileMap = new();
@@ -77,6 +82,7 @@ public class BlockManager : MonoBehaviour
     private float currentMaxDamageThreshold = 0f;
     private float currentDamageInterval = 0f;
     private int lavaLevel = -1;
+    private float lastFallingBlockTime = 0f;
 
     void Start()
     {
@@ -107,6 +113,12 @@ public class BlockManager : MonoBehaviour
             currentDamageInterval = Mathf.Max(1f, currentDamageInterval);
 
             GenerateDamage();
+        }
+
+        if (Time.time - lastFallingBlockTime > fallingBlockInterval)
+        {
+            lastFallingBlockTime = Time.time;
+            ConvertBlocksToFallingBlocks();
         }
     }
 
@@ -320,6 +332,84 @@ public class BlockManager : MonoBehaviour
         }
     }
 
+    void ConvertBlocksToFallingBlocks()
+    {
+        List<Vector3Int> eligibleBlocks = new List<Vector3Int>();
+
+        // Find all blocks that have empty space below them
+        for (int x = 0; x < worldWidth; x++)
+        {
+            for (int y = 0; y < worldHeight; y++)
+            {
+                Vector3Int position = new Vector3Int(x, y, 0);
+                Vector3Int belowPosition = new Vector3Int(x, y - 1, 0);
+
+                // Check if there's a block at this position and no block below it
+                if (blockMap.ContainsKey(position) && !blockMap.ContainsKey(belowPosition))
+                {
+                    // Skip barrier blocks and indestructible blocks
+                    Block block = blockMap[position];
+                    if (!block.blockData.isIndestructible && block.blockData != barrierBlock)
+                    {
+                        eligibleBlocks.Add(position);
+                    }
+                }
+            }
+        }
+
+        Debug.Log("Eligible blocks: " + eligibleBlocks.Count);
+
+        // If no eligible blocks, return early
+        if (eligibleBlocks.Count == 0)
+            return;
+
+        // Select random blocks to convert (up to the specified amount)
+        int blocksToConvert = Mathf.Min(blocksToFallPerInterval, eligibleBlocks.Count);
+        List<Vector3Int> blocksToConvertList = new List<Vector3Int>();
+
+        for (int i = 0; i < blocksToConvert; i++)
+        {
+            int randomIndex = Random.Range(0, eligibleBlocks.Count);
+            blocksToConvertList.Add(eligibleBlocks[randomIndex]);
+            eligibleBlocks.RemoveAt(randomIndex);
+        }
+
+        // Convert selected blocks to falling blocks
+        foreach (Vector3Int position in blocksToConvertList)
+        {
+            ConvertBlockToFallingBlock(position);
+        }
+    }
+
+    void ConvertBlockToFallingBlock(Vector3Int position)
+    {
+        Debug.Log("Converting block to falling block: " + position);
+
+        if (!blockMap.ContainsKey(position))
+            return;
+
+        Block block = blockMap[position];
+
+        // Get the world position of the block
+        Vector3 worldPosition = tilemap.GetCellCenterWorld(position);
+
+        // Remove the block from the tilemap
+        RemoveTile(position);
+
+        // Spawn the falling block
+        GameObject fallingBlockObj = Instantiate(
+            fallingBlockPrefab,
+            worldPosition,
+            Quaternion.identity
+        );
+        FallingBlock fallingBlock = fallingBlockObj.GetComponent<FallingBlock>();
+
+        if (fallingBlock != null)
+        {
+            fallingBlock.Initialize(block, this);
+        }
+    }
+
     void RemoveBlocksAroundPlayer()
     {
         Vector3Int playerPosition = GetNearestBlockPosition(player.transform.position);
@@ -436,17 +526,7 @@ public class BlockManager : MonoBehaviour
         if (IsBlockOnScreen(position))
         {
             Vector3 worldPosition = tilemap.GetCellCenterWorld(position);
-            GameObject blockDestroyEffect = Instantiate(
-                blockDestroyEffectPrefab,
-                worldPosition,
-                Quaternion.identity
-            );
-            blockDestroyEffect.transform.localRotation = Quaternion.Euler(-90, 0, 0);
-            ParticleSystem particleSystem = blockDestroyEffect.GetComponent<ParticleSystem>();
-            var main = particleSystem.main;
-            main.startColor = block.blockData.color;
-            particleSystem.Play();
-            Destroy(blockDestroyEffect, 0.3f);
+            SpawnBlockDestroyEffect(worldPosition, block.blockData);
 
             if (block.blockData.minGoldDrop > 0)
             {
@@ -479,6 +559,21 @@ public class BlockManager : MonoBehaviour
         RemoveTile(position);
     }
 
+    public void SpawnBlockDestroyEffect(Vector3 worldPosition, BlockData blockData)
+    {
+        GameObject blockDestroyEffect = Instantiate(
+            blockDestroyEffectPrefab,
+            worldPosition,
+            Quaternion.identity
+        );
+        blockDestroyEffect.transform.localRotation = Quaternion.Euler(-90, 0, 0);
+        ParticleSystem particleSystem = blockDestroyEffect.GetComponent<ParticleSystem>();
+        var main = particleSystem.main;
+        main.startColor = blockData.color;
+        particleSystem.Play();
+        Destroy(blockDestroyEffect, 0.3f);
+    }
+
     void UpdateDamageSprite(Vector3Int position, Block block)
     {
         if (damageSprites == null || damageSprites.Length == 0)
@@ -503,6 +598,18 @@ public class BlockManager : MonoBehaviour
             // No damage, clear damage sprite
             damageTilemap.SetTile(position, null);
         }
+    }
+
+    public Sprite GetDamageSprite(float health, float maxHealth)
+    {
+        float healthPercentage = health / maxHealth;
+        int damageLevel = Mathf.FloorToInt((1f - healthPercentage) * damageSprites.Length);
+        return damageSprites[damageLevel];
+    }
+
+    public Vector3 GetNearestGridPosition(Vector3 worldPosition)
+    {
+        return tilemap.GetCellCenterWorld(tilemap.WorldToCell(worldPosition));
     }
 
     private Vector3Int GetNearestBlockPosition(Vector3 worldPosition)

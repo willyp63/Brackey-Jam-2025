@@ -423,7 +423,7 @@ Transform:
   - {fileID: 1035288499965579832}
   - {fileID: 6188432293711685065}
   m_Father: {fileID: 0}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &6755968693095986587
 MonoBehaviour:
@@ -439,7 +439,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveForce: 30
   jumpForce: 4
-  jumpHoldForce: 1.5
+  jumpHoldForce: 300
   jumpMaxVelocity: 5
   jumpHoldGravityScale: 0
   jumpMinTime: 0.1
@@ -465,8 +465,11 @@ MonoBehaviour:
   projectileDamage: 25
   fireRate: 0.2
   canFireContinuously: 1
+  projectileEnergyCost: 0.1
   pickupRadius: 3
-  pickupForce: 0.033
+  pickupForce: 0.05
+  energyRegenRate: 0.66
+  energyDrainRate: 1
   jumpGlow: {fileID: 4419634933917850436}
 --- !u!70 &8753529675070199819
 CapsuleCollider2D:
@@ -518,7 +521,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDrag: 1
   m_AngularDrag: 0.05
-  m_GravityScale: 2
+  m_GravityScale: 1
   m_Material: {fileID: 6200000, guid: 885ff4d75f9b628459b56ad97db2337f, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
@@ -945,8 +948,8 @@ MonoBehaviour:
     m_Extent: {x: 0.9985302, y: 0.99853027, z: 0}
   m_PointLightInnerAngle: 360
   m_PointLightOuterAngle: 360
-  m_PointLightInnerRadius: 0.3
-  m_PointLightOuterRadius: 5
+  m_PointLightInnerRadius: 0.5
+  m_PointLightOuterRadius: 5.5
   m_ShapeLightParametricSides: 5
   m_ShapeLightParametricAngleOffset: 0
   m_ShapeLightParametricRadius: 1

@@ -77,6 +77,9 @@ public class Player : MonoBehaviour
     [SerializeField]
     private bool canFireContinuously = true;
 
+    [SerializeField]
+    private float projectileEnergyCost = 0.1f;
+
     [Header("Loot")]
     [SerializeField]
     private float pickupRadius = 1f;
@@ -85,6 +88,13 @@ public class Player : MonoBehaviour
     [SerializeField]
     private float pickupForce = 4f;
     public float PickupForce => pickupForce;
+
+    [Header("Energy")]
+    [SerializeField]
+    private float energyRegenRate = 0.1f;
+
+    [SerializeField]
+    private float energyDrainRate = 0.1f;
 
     [Header("Misc")]
     [SerializeField]
@@ -100,6 +110,19 @@ public class Player : MonoBehaviour
     private float lastFireTime = 0f;
     private float originalDrag;
 
+    private int health = 0;
+    private int maxHealth = 3;
+    public int Health => health;
+    public int MaxHealth => maxHealth;
+
+    private float energy = 0;
+    private int maxEnergy = 3;
+    public float Energy => energy;
+    public int MaxEnergy => maxEnergy;
+
+    public System.Action onDeath;
+    public System.Action onHealthChanged;
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -107,6 +130,21 @@ public class Player : MonoBehaviour
         originalGravityScale = rb.gravityScale;
         originalDrag = rb.drag;
         jumpGlow.SetActive(false);
+
+        energy = maxEnergy;
+        health = maxHealth;
+        onHealthChanged?.Invoke();
+    }
+
+    public void TakeDamage(int damage)
+    {
+        health -= damage;
+        onHealthChanged?.Invoke();
+
+        if (health <= 0)
+        {
+            onDeath?.Invoke();
+        }
     }
 
     void Update()
@@ -120,14 +158,20 @@ public class Player : MonoBehaviour
         //     Jump();
         // }
 
-        if (Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.W))
+        if ((Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.W)) && energy > 0.1f)
         {
             rb.gravityScale = originalGravityScale * jumpHoldGravityScale;
 
             float maxVelocityFactor = Mathf.Clamp01(
                 Mathf.Abs(jumpMaxVelocity - rb.velocity.y) / jumpMaxVelocity
             );
-            rb.AddForce(new Vector2(0, jumpHoldForce * maxVelocityFactor), ForceMode2D.Force);
+            rb.AddForce(
+                new Vector2(0, jumpHoldForce * maxVelocityFactor * Time.deltaTime),
+                ForceMode2D.Force
+            );
+
+            energy -= Time.deltaTime * energyDrainRate;
+            energy = Mathf.Clamp(energy, 0, maxEnergy);
 
             jumpGlow.SetActive(true);
         }
@@ -135,6 +179,12 @@ public class Player : MonoBehaviour
         {
             rb.gravityScale = originalGravityScale;
             jumpGlow.SetActive(false);
+
+            if (Time.time > lastFireTime + fireRate)
+            {
+                energy += Time.deltaTime * energyRegenRate;
+                energy = Mathf.Clamp(energy, 0, maxEnergy);
+            }
         }
 
         // Fire projectile input
@@ -323,9 +373,13 @@ public class Player : MonoBehaviour
         if (projectilePrefab == null)
             return;
 
+        if (energy < projectileEnergyCost)
+            return;
+
         if (Time.time < lastFireTime + fireRate)
             return;
 
+        energy -= projectileEnergyCost;
         lastFireTime = Time.time;
 
         // Get mouse position in world space

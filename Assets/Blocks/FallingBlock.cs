@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class FallingBlock : MonoBehaviour
@@ -10,8 +9,9 @@ public class FallingBlock : MonoBehaviour
 
     private BlockManager blockManager;
     private BlockData blockData;
-    private Health health;
     private Rigidbody2D rb;
+
+    private int health;
 
     public void Initialize(Block block, BlockManager blockManager)
     {
@@ -20,19 +20,23 @@ public class FallingBlock : MonoBehaviour
 
         spriteRenderer.sprite = blockData.sprite;
 
-        health = GetComponent<Health>();
-        health.SetMaxHealth(blockData.maxHealth);
-        health.SetHealth(block.health);
-
-        health.onHealthChanged += UpdateDamageSprite;
-        health.onDeath += DestroyBlock;
-
+        health = block.health;
         UpdateDamageSprite();
 
         rb = GetComponent<Rigidbody2D>();
         rb.bodyType = RigidbodyType2D.Static;
-
         StartCoroutine(FallAfterDelay());
+    }
+
+    public void TakeDamage(int damage)
+    {
+        health -= damage;
+        UpdateDamageSprite();
+
+        if (health <= 0)
+        {
+            DestroyBlock();
+        }
     }
 
     IEnumerator FallAfterDelay()
@@ -44,16 +48,13 @@ public class FallingBlock : MonoBehaviour
 
     void UpdateDamageSprite()
     {
-        if (health.CurrentHealth <= 0 || health.CurrentHealth >= health.MaxHealth)
+        if (health <= 0 || health >= blockData.maxHealth)
         {
             damageSpriteRenderer.sprite = null;
             return;
         }
 
-        damageSpriteRenderer.sprite = blockManager.GetDamageSprite(
-            health.CurrentHealth,
-            health.MaxHealth
-        );
+        damageSpriteRenderer.sprite = blockManager.GetDamageSprite(health, blockData.maxHealth);
     }
 
     void OnCollisionEnter2D(Collision2D collision)

@@ -71,14 +71,14 @@ public class Projectile : MonoBehaviour
 
         isDestroyed = true;
 
-        // Try to deal damage if the object has a Health component
-        Health health = other.GetComponent<Health>();
-        if (health != null)
+        // Try to deal damage to falling blocks
+        FallingBlock fallingBlock = other.GetComponent<FallingBlock>();
+        if (fallingBlock != null)
         {
-            health.TakeDamage(damage);
+            fallingBlock.TakeDamage(damage);
         }
 
-        // Try to destroy a block
+        // Try to deal damage to blocks
         BlockManager blockManager = other.GetComponent<BlockManager>();
         if (blockManager != null)
         {

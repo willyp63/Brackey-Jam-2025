@@ -89,6 +89,15 @@ public class BlockManager : MonoBehaviour
     public float fallingBlockInterval = 3f;
     public int blocksToFallPerInterval = 12;
 
+    [Header("Enemy Settings")]
+    public GameObject bladeEnemyPrefab;
+    public float enemyMinSpawnRadius = 6f;
+    public float enemyMaxSpawnRadius = 10f;
+    public float enemyDespawnRadius = 12f;
+    public int initialEnemies = 3;
+    public float enemiesIncreaseInterval = 10f;
+    public int enemiesIncreaseAmount = 1;
+
     private Dictionary<Vector3Int, Block> blockMap = new();
 
     private Dictionary<BlockData, TileBase> tileMap = new();
@@ -102,6 +111,11 @@ public class BlockManager : MonoBehaviour
     private int lavaLevel = -1;
     private float lastFallingBlockTime = 0f;
     private float lastLavaSpeedIncreaseTime = 0f;
+
+    // Enemy management
+    private List<GameObject> activeEnemies = new List<GameObject>();
+    private int targetEnemyCount = 0;
+    private float lastEnemyIncreaseTime = 0f;
 
     void Start()
     {
@@ -759,14 +773,6 @@ public class BlockManager : MonoBehaviour
         return closestPosition;
     }
 
-    /// <summary>
-    /// Calculates the position on the perimeter of a block where a projectile should be placed
-    /// </summary>
-    /// <param name="blockWorldPosition">The world position of the block that was hit</param>
-    /// <param name="projectileDirection">The direction the projectile was traveling</param>
-    /// <param name="projectileSpawnPosition">The position where the projectile was spawned</param>
-    /// <param name="blockGridPosition">The grid position of the block that was hit</param>
-    /// <returns>The world position on the perimeter of the block</returns>
     public Vector3 GetProjectilePerimeterPosition(
         Vector3 blockWorldPosition,
         Vector2 projectileDirection,
@@ -804,9 +810,6 @@ public class BlockManager : MonoBehaviour
         return intersectionPoint;
     }
 
-    /// <summary>
-    /// Calculates the intersection point of a line with a rectangle (block bounds)
-    /// </summary>
     private Vector3 CalculateLineRectangleIntersection(
         Vector3 lineStart,
         Vector2 direction,

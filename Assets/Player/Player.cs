@@ -103,6 +103,13 @@ public class Player : MonoBehaviour
     [SerializeField]
     private float invulnerableTime = 0.5f;
 
+    [Header("Fall Damage")]
+    [SerializeField]
+    private float fallDamageThreshold = 8f;
+
+    [SerializeField]
+    private int fallDamageAmount = 1;
+
     [Header("Misc")]
     [SerializeField]
     private GameObject jumpGlow;
@@ -127,6 +134,7 @@ public class Player : MonoBehaviour
     private bool isInLava = false;
     private float lastLavaDamageTime = 0f;
     private float lastHurtTime = 0f;
+    private Vector2 previousVelocity;
 
     private int health = 0;
     private int maxHealth = 1;
@@ -286,6 +294,9 @@ public class Player : MonoBehaviour
 
     void FixedUpdate()
     {
+        // Store current velocity for fall damage detection
+        previousVelocity = rb.velocity;
+
         // Apply horizontal movement force
         Move();
 
@@ -324,6 +335,7 @@ public class Player : MonoBehaviour
 
     void CheckGrounded()
     {
+        bool wasGrounded = isGrounded;
         isGrounded = false;
         friction = 1f;
 
@@ -347,6 +359,21 @@ public class Player : MonoBehaviour
 
                 break;
             }
+        }
+
+        // Check for fall damage when landing
+        if (!wasGrounded && isGrounded)
+        {
+            CheckFallDamage();
+        }
+    }
+
+    void CheckFallDamage()
+    {
+        // Check if the player was falling fast enough to take damage
+        if (previousVelocity.y < -fallDamageThreshold)
+        {
+            TakeDamage(fallDamageAmount);
         }
     }
 

@@ -41,6 +41,7 @@ public class BladeEnemy : Enemy
             Vector2 direction = (player.transform.position - transform.position).normalized;
             player.TakeDamage(1);
             player.Push(direction * attackPushForce);
+            Push(-direction * attackPushForce);
         }
     }
 }

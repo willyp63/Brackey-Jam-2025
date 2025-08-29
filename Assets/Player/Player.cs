@@ -100,6 +100,9 @@ public class Player : MonoBehaviour
     [SerializeField]
     private int initialHealth = 3;
 
+    [SerializeField]
+    private float invulnerableTime = 0.5f;
+
     [Header("Misc")]
     [SerializeField]
     private GameObject jumpGlow;
@@ -123,6 +126,7 @@ public class Player : MonoBehaviour
     private ShakeBehavior damageShakeEffect;
     private bool isInLava = false;
     private float lastLavaDamageTime = 0f;
+    private float lastHurtTime = 0f;
 
     private int health = 0;
     private int maxHealth = 1;
@@ -175,6 +179,11 @@ public class Player : MonoBehaviour
 
     public void TakeDamage(int damage)
     {
+        if (Time.time < lastHurtTime + invulnerableTime)
+            return;
+
+        lastHurtTime = Time.time;
+
         health -= damage;
         onHealthChanged?.Invoke();
 

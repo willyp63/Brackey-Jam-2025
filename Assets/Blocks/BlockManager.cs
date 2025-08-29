@@ -98,6 +98,8 @@ public class BlockManager : MonoBehaviour
     public float enemyMaxSpawnRadius = 10f;
     public float enemyDespawnRadius = 12f;
 
+    public float enemySpawnInterval = 8f;
+
     public int initialBladeEnemies = 2;
     public int maxBladeEnemies = 10;
     public int bladeEnemiesIncreaseAmount = 1;
@@ -129,6 +131,7 @@ public class BlockManager : MonoBehaviour
     private int targetGunEnemyCount = 0;
     private float lastBladeEnemyIncreaseTime = 0f;
     private float lastGunEnemyIncreaseTime = 0f;
+    private float lastEnemySpawnTime = 0f;
 
     void Start()
     {
@@ -137,6 +140,7 @@ public class BlockManager : MonoBehaviour
         lastGunEnemyIncreaseTime = Time.time;
         lastFallingBlockTime = Time.time;
         lastLavaSpeedIncreaseTime = Time.time;
+        lastEnemySpawnTime = Time.time;
 
         currentMinDamageThreshold = minDamageThreshold;
         currentMaxDamageThreshold = maxDamageThreshold;
@@ -217,19 +221,24 @@ public class BlockManager : MonoBehaviour
             targetGunEnemyCount = Mathf.Min(targetGunEnemyCount, maxGunEnemies);
         }
 
-        // Spawn new enemies if needed
-        while (activeBladeEnemies.Count < targetBladeEnemyCount)
+        if (Time.time - lastEnemySpawnTime > enemySpawnInterval)
         {
-            if (!TrySpawnEnemy(true))
+            lastEnemySpawnTime = Time.time;
+
+            // Spawn new enemies if needed
+            while (activeBladeEnemies.Count < targetBladeEnemyCount)
             {
-                break; // Can't spawn more enemies, break to avoid infinite loop
+                if (!TrySpawnEnemy(true))
+                {
+                    break; // Can't spawn more enemies, break to avoid infinite loop
+                }
             }
-        }
-        while (activeGunEnemies.Count < targetGunEnemyCount)
-        {
-            if (!TrySpawnEnemy(false))
+            while (activeGunEnemies.Count < targetGunEnemyCount)
             {
-                break; // Can't spawn more enemies, break to avoid infinite loop
+                if (!TrySpawnEnemy(false))
+                {
+                    break; // Can't spawn more enemies, break to avoid infinite loop
+                }
             }
         }
     }

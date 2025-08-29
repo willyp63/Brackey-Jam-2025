@@ -291,7 +291,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3049583699165999366}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 073797afb82c5a1438f328866b10b3f0, type: 3}
   m_Name: 
@@ -770,12 +770,11 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   visionRange: 6
-  attackRange: 3
+  attackRange: 4
   wanderSpeed: 0.25
   chaseSpeed: 0.5
   wanderChangeDirectionTime: 3
-  wallDetectionDistance: 0.25
-  stopWhenInAttackRange: 1
+  wallDetectionDistance: 0.5
   initialHealth: 100
   spriteRenderers:
   - {fileID: 5070744549931691510}

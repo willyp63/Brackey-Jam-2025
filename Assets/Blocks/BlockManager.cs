@@ -91,12 +91,21 @@ public class BlockManager : MonoBehaviour
 
     [Header("Enemy Settings")]
     public GameObject bladeEnemyPrefab;
+    public GameObject gunEnemyPrefab;
+
     public float enemyMinSpawnRadius = 6f;
     public float enemyMaxSpawnRadius = 10f;
     public float enemyDespawnRadius = 12f;
-    public int initialEnemies = 3;
-    public float enemiesIncreaseInterval = 10f;
-    public int enemiesIncreaseAmount = 1;
+
+    public int initialBladeEnemies = 2;
+    public int maxBladeEnemies = 10;
+    public int bladeEnemiesIncreaseAmount = 1;
+    public float bladeEnemiesIncreaseInterval = 10f;
+
+    public int initialGunEnemies = 2;
+    public int maxGunEnemies = 10;
+    public int gunEnemiesIncreaseAmount = 1;
+    public float gunEnemiesIncreaseInterval = 10f;
 
     private Dictionary<Vector3Int, Block> blockMap = new();
 
@@ -113,12 +122,21 @@ public class BlockManager : MonoBehaviour
     private float lastLavaSpeedIncreaseTime = 0f;
 
     // Enemy management
-    private List<GameObject> activeEnemies = new List<GameObject>();
-    private int targetEnemyCount = 0;
-    private float lastEnemyIncreaseTime = 0f;
+    private List<GameObject> activeBladeEnemies = new List<GameObject>();
+    private List<GameObject> activeGunEnemies = new List<GameObject>();
+    private int targetBladeEnemyCount = 0;
+    private int targetGunEnemyCount = 0;
+    private float lastBladeEnemyIncreaseTime = 0f;
+    private float lastGunEnemyIncreaseTime = 0f;
 
     void Start()
     {
+        lastDamageTickTime = Time.time;
+        lastBladeEnemyIncreaseTime = Time.time;
+        lastGunEnemyIncreaseTime = Time.time;
+        lastFallingBlockTime = Time.time;
+        lastLavaSpeedIncreaseTime = Time.time;
+
         currentMinDamageThreshold = minDamageThreshold;
         currentMaxDamageThreshold = maxDamageThreshold;
         currentDamageInterval = damageInterval;
@@ -129,6 +147,11 @@ public class BlockManager : MonoBehaviour
 
         InitializeTileMap();
         GenerateWorld();
+
+        // Initialize enemy spawning
+        targetBladeEnemyCount = initialBladeEnemies;
+        targetGunEnemyCount = initialGunEnemies;
+        SpawnInitialEnemies();
     }
 
     void Update()
@@ -162,6 +185,215 @@ public class BlockManager : MonoBehaviour
             lastLavaSpeedIncreaseTime = Time.time;
             currentLavaSpeed += lavaSpeedIncreaseAmount;
             lava.SetMoveSpeed(currentLavaSpeed);
+        }
+
+        // Handle enemy management
+        ManageEnemies();
+    }
+
+    // Enemy management methods
+    void ManageEnemies()
+    {
+        // Clean up destroyed enemies from the list
+        activeBladeEnemies.RemoveAll(enemy => enemy == null);
+        activeGunEnemies.RemoveAll(enemy => enemy == null);
+
+        // Check for enemies that need to be despawned
+        CheckEnemyDespawning();
+
+        // Increase target enemy count over time
+        if (Time.time - lastBladeEnemyIncreaseTime > bladeEnemiesIncreaseInterval)
+        {
+            lastBladeEnemyIncreaseTime = Time.time;
+            targetBladeEnemyCount += bladeEnemiesIncreaseAmount;
+            targetBladeEnemyCount = Mathf.Min(targetBladeEnemyCount, maxBladeEnemies);
+        }
+        if (Time.time - lastGunEnemyIncreaseTime > gunEnemiesIncreaseInterval)
+        {
+            lastGunEnemyIncreaseTime = Time.time;
+            targetGunEnemyCount += gunEnemiesIncreaseAmount;
+            targetGunEnemyCount = Mathf.Min(targetGunEnemyCount, maxGunEnemies);
+        }
+
+        // Spawn new enemies if needed
+        while (activeBladeEnemies.Count < targetBladeEnemyCount)
+        {
+            if (!TrySpawnEnemy(true))
+            {
+                break; // Can't spawn more enemies, break to avoid infinite loop
+            }
+        }
+        while (activeGunEnemies.Count < targetGunEnemyCount)
+        {
+            if (!TrySpawnEnemy(false))
+            {
+                break; // Can't spawn more enemies, break to avoid infinite loop
+            }
+        }
+    }
+
+    void SpawnInitialEnemies()
+    {
+        // Spawn initial enemies
+        for (int i = 0; i < initialBladeEnemies; i++)
+        {
+            if (!TrySpawnEnemy(true))
+            {
+                break;
+            }
+        }
+        for (int i = 0; i < initialGunEnemies; i++)
+        {
+            if (!TrySpawnEnemy(false))
+            {
+                break;
+            }
+        }
+    }
+
+    bool TrySpawnEnemy(bool isBladeEnemy)
+    {
+        if (bladeEnemyPrefab == null || gunEnemyPrefab == null || player == null)
+            return false;
+
+        // Find valid spawn positions
+        List<Vector3Int> validSpawnPositions = GetValidEnemySpawnPositions();
+
+        if (validSpawnPositions.Count == 0)
+            return false;
+
+        // Choose a random valid position
+        Vector3Int spawnPosition = validSpawnPositions[Random.Range(0, validSpawnPositions.Count)];
+
+        // Get the world position at the center of the cell
+        Vector3 worldSpawnPosition = tilemap.GetCellCenterWorld(spawnPosition);
+
+        // Spawn the enemy
+        GameObject enemy = Instantiate(
+            isBladeEnemy ? bladeEnemyPrefab : gunEnemyPrefab,
+            worldSpawnPosition,
+            Quaternion.identity
+        );
+        if (isBladeEnemy)
+            activeBladeEnemies.Add(enemy);
+        else
+            activeGunEnemies.Add(enemy);
+
+        return true;
+    }
+
+    List<Vector3Int> GetValidEnemySpawnPositions()
+    {
+        List<Vector3Int> validPositions = new List<Vector3Int>();
+        Vector3 playerPosition = player.transform.position;
+
+        // Loop through all cells in the world
+        for (int x = 0; x < worldWidth; x++)
+        {
+            for (int y = 0; y < worldHeight; y++)
+            {
+                Vector3Int cellPosition = new Vector3Int(x, y, 0);
+
+                // Check if this cell is empty (no block)
+                if (blockMap.ContainsKey(cellPosition))
+                    continue;
+
+                // Get the world position at the center of this cell
+                Vector3 cellCenterWorld = tilemap.GetCellCenterWorld(cellPosition);
+
+                // Calculate distance from player
+                float distanceFromPlayer = Vector3.Distance(playerPosition, cellCenterWorld);
+
+                // Check if within spawn radius
+                if (
+                    distanceFromPlayer >= enemyMinSpawnRadius
+                    && distanceFromPlayer <= enemyMaxSpawnRadius
+                )
+                {
+                    // Check if there's enough space around the spawn position
+                    if (HasEnoughSpawnSpace(cellPosition))
+                    {
+                        validPositions.Add(cellPosition);
+                    }
+                }
+            }
+        }
+
+        return validPositions;
+    }
+
+    bool HasEnoughSpawnSpace(Vector3Int cellPosition)
+    {
+        // Check if there's enough space around the spawn position for the enemy
+        // This prevents enemies from spawning in very tight spaces
+
+        int numBlocksNearby = 0;
+        for (int x = -1; x <= 1; x++)
+        {
+            for (int y = -1; y <= 1; y++)
+            {
+                Vector3Int checkPosition = cellPosition + new Vector3Int(x, y, 0);
+
+                // If there's a block in the immediate vicinity, this might be too tight
+                if (blockMap.ContainsKey(checkPosition))
+                {
+                    // Allow some blocks nearby, but not too many
+                    if (x == 0 && y == 0)
+                        continue; // Center position should be empty
+
+                    numBlocksNearby++;
+
+                    // If there are too many blocks nearby, this isn't a good spawn location
+                    if (numBlocksNearby > 4)
+                        return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    void CheckEnemyDespawning()
+    {
+        if (player == null)
+            return;
+
+        Vector3 playerPosition = player.transform.position;
+
+        for (int i = activeBladeEnemies.Count - 1; i >= 0; i--)
+        {
+            if (activeBladeEnemies[i] == null)
+                continue;
+
+            float distanceFromPlayer = Vector3.Distance(
+                playerPosition,
+                activeBladeEnemies[i].transform.position
+            );
+
+            if (distanceFromPlayer > enemyDespawnRadius)
+            {
+                // Despawn the enemy
+                Destroy(activeBladeEnemies[i]);
+                activeBladeEnemies.RemoveAt(i);
+            }
+        }
+
+        for (int i = activeGunEnemies.Count - 1; i >= 0; i--)
+        {
+            if (activeGunEnemies[i] == null)
+                continue;
+
+            float distanceFromPlayer = Vector3.Distance(
+                playerPosition,
+                activeGunEnemies[i].transform.position
+            );
+
+            if (distanceFromPlayer > enemyDespawnRadius)
+            {
+                // Despawn the enemy
+                Destroy(activeGunEnemies[i]);
+                activeGunEnemies.RemoveAt(i);
+            }
         }
     }
 

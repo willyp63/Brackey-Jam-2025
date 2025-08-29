@@ -25,9 +25,6 @@ public abstract class Enemy : MonoBehaviour
     [SerializeField]
     private float wallDetectionDistance = 0.5f;
 
-    [SerializeField]
-    private bool stopWhenInAttackRange = true;
-
     [Header("Health")]
     [SerializeField]
     private int initialHealth = 100;
@@ -56,10 +53,17 @@ public abstract class Enemy : MonoBehaviour
     public System.Action onDeath;
     public System.Action onHealthChanged;
 
-    protected virtual void FacePlayer()
+    protected virtual void FacePlayer(bool canSeePlayer)
     {
         // face the player
-        transform.localScale = new Vector3(player.position.x > transform.position.x ? -1 : 1, 1, 1);
+        if (canSeePlayer)
+            transform.localScale = new Vector3(
+                player.position.x > transform.position.x ? -1 : 1,
+                1,
+                1
+            );
+        else
+            transform.localScale = new Vector3(rb.velocity.x > 0 ? -1 : 1, 1, 1);
     }
 
     protected abstract void Attack();
@@ -129,40 +133,30 @@ public abstract class Enemy : MonoBehaviour
         if (player == null || health <= 0)
             return;
 
-        FacePlayer();
-
         // Check if we can see the player
         canSeePlayer = CanSeePlayer();
+
+        FacePlayer(canSeePlayer);
 
         // Check if we're within attack range
         float distanceToPlayer = Vector2.Distance(transform.position, player.position);
         isWithinAttackRange = distanceToPlayer <= attackRange;
 
-        // Debug current state
-        Debug.Log(
-            $"[{gameObject.name}] State: canSeePlayer={canSeePlayer}, isWithinAttackRange={isWithinAttackRange}, distanceToPlayer={distanceToPlayer:F2}"
-        );
-
         // Handle movement based on current state
         if (canSeePlayer && !isWithinAttackRange)
         {
             // Chase the player
-            Debug.Log($"[{gameObject.name}] Chasing player!");
             ChasePlayer();
         }
         else if (!canSeePlayer)
         {
             // Wander randomly
-            Debug.Log($"[{gameObject.name}] Wandering...");
             Wander();
         }
         else
         {
             // Stop moving when within attack range
-            Debug.Log($"[{gameObject.name}] Within attack range, stopping!");
             Attack();
-            if (stopWhenInAttackRange)
-                StopMoving();
         }
     }
 
@@ -177,7 +171,6 @@ public abstract class Enemy : MonoBehaviour
         // Check if player is within vision range
         if (distanceToPlayer > visionRange)
         {
-            Debug.Log($"[{gameObject.name}] Player too far: {distanceToPlayer:F2} > {visionRange}");
             return false;
         }
 
@@ -192,13 +185,9 @@ public abstract class Enemy : MonoBehaviour
         // If we hit a wall before reaching the player, we can't see them
         if (hit.collider != null)
         {
-            Debug.Log(
-                $"[{gameObject.name}] Wall blocking vision: {hit.collider.name} at distance {hit.distance:F2}"
-            );
             return false;
         }
 
-        Debug.Log($"[{gameObject.name}] Can see player! Distance: {distanceToPlayer:F2}");
         return true;
     }
 
@@ -206,20 +195,9 @@ public abstract class Enemy : MonoBehaviour
     {
         Vector2 directionToPlayer = (player.position - transform.position).normalized;
 
-        // Check if there's a wall in the way
-        if (!IsWallInDirection(directionToPlayer))
-        {
-            // Move towards player
-            Vector2 force = directionToPlayer * chaseSpeed;
-            rb.AddForce(force);
-            Debug.Log($"[{gameObject.name}] Chasing with force: {force}, velocity: {rb.velocity}");
-        }
-        else
-        {
-            // Try to find an alternative path or stop
-            Debug.Log($"[{gameObject.name}] Wall in way while chasing, stopping!");
-            StopMoving();
-        }
+        // Move towards player
+        Vector2 force = directionToPlayer * chaseSpeed;
+        rb.AddForce(force);
     }
 
     private void Wander()
@@ -227,7 +205,6 @@ public abstract class Enemy : MonoBehaviour
         // Change direction periodically
         if (Time.time - lastDirectionChangeTime > wanderChangeDirectionTime)
         {
-            Debug.Log($"[{gameObject.name}] Time to change wander direction!");
             ChangeWanderDirection();
         }
 
@@ -237,14 +214,10 @@ public abstract class Enemy : MonoBehaviour
             // Move in current direction
             Vector2 force = currentDirection * wanderSpeed;
             rb.AddForce(force);
-            Debug.Log(
-                $"[{gameObject.name}] Wandering in direction: {currentDirection}, force: {force}, velocity: {rb.velocity}"
-            );
         }
         else
         {
             // Wall detected, change direction immediately
-            Debug.Log($"[{gameObject.name}] Wall detected while wandering, changing direction!");
             ChangeWanderDirection();
         }
     }
@@ -259,9 +232,6 @@ public abstract class Enemy : MonoBehaviour
         );
 
         lastDirectionChangeTime = Time.time;
-        Debug.Log(
-            $"[{gameObject.name}] New wander direction: {currentDirection} (angle: {randomAngle:F1}°)"
-        );
     }
 
     private bool IsWallInDirection(Vector2 direction)
@@ -273,31 +243,7 @@ public abstract class Enemy : MonoBehaviour
             wallLayer
         );
 
-        if (hit.collider != null)
-        {
-            Debug.Log(
-                $"[{gameObject.name}] Wall detected in direction {direction}: {hit.collider.name} at distance {hit.distance:F2}"
-            );
-        }
-
         return hit.collider != null;
-    }
-
-    private void StopMoving()
-    {
-        // Apply damping to slow down movement
-        rb.velocity *= 0.9f;
-
-        // If moving very slowly, stop completely
-        if (rb.velocity.magnitude < 0.1f)
-        {
-            rb.velocity = Vector2.zero;
-            Debug.Log($"[{gameObject.name}] Completely stopped");
-        }
-        else
-        {
-            Debug.Log($"[{gameObject.name}] Slowing down, current velocity: {rb.velocity}");
-        }
     }
 
     // Optional: Visualize the vision range and detection in the editor

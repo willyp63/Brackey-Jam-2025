@@ -207,7 +207,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3049583699165999366}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 073797afb82c5a1438f328866b10b3f0, type: 3}
   m_Name: 
@@ -586,14 +586,13 @@ MonoBehaviour:
   wanderSpeed: 0.25
   chaseSpeed: 0.5
   wanderChangeDirectionTime: 3
-  wallDetectionDistance: 0.25
-  stopWhenInAttackRange: 0
+  wallDetectionDistance: 0.5
   initialHealth: 100
   spriteRenderers:
   - {fileID: 5070744549931691510}
   hurtColor: {r: 1, g: 0.627451, b: 0.627451, a: 1}
-  chargeForce: 5
-  attackPushForce: 5
+  chargeForce: 4
+  attackPushForce: 4
   attackCooldown: 2
 --- !u!58 &5183653890118717662
 CircleCollider2D:

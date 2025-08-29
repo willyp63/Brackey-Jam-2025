@@ -67,12 +67,20 @@ public class GunEnemy : Enemy
         }
     }
 
-    protected override void FacePlayer()
+    protected override void FacePlayer(bool canSeePlayer)
     {
-        base.FacePlayer();
+        base.FacePlayer(canSeePlayer);
 
         // Rotate weapons to face player
-        RotateWeaponsToPlayer();
+        if (canSeePlayer)
+        {
+            RotateWeaponsToPlayer();
+        }
+        else
+        {
+            mainGun.transform.rotation = Quaternion.Euler(0, 0, 0);
+            offGun.transform.rotation = Quaternion.Euler(0, 0, 0);
+        }
     }
 
     void RotateWeaponsToPlayer()
@@ -90,15 +98,8 @@ public class GunEnemy : Enemy
         float clampedAngle = ClampWeaponAngle(angleToPlayer);
 
         // Apply rotation to weapons
-        if (mainGun != null)
-        {
-            mainGun.transform.rotation = Quaternion.Euler(0, 0, clampedAngle);
-        }
-
-        if (offGun != null)
-        {
-            offGun.transform.rotation = Quaternion.Euler(0, 0, clampedAngle);
-        }
+        mainGun.transform.rotation = Quaternion.Euler(0, 0, clampedAngle);
+        offGun.transform.rotation = Quaternion.Euler(0, 0, clampedAngle);
     }
 
     float ClampWeaponAngle(float targetAngle)

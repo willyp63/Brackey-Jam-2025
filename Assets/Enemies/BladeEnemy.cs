@@ -32,6 +32,9 @@ public class BladeEnemy : Enemy
 
     void OnCollisionEnter2D(Collision2D other)
     {
+        if (Health <= 0)
+            return;
+
         Player player = other.gameObject.GetComponent<Player>();
         if (player != null)
         {

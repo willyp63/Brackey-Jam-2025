@@ -168,6 +168,11 @@ public class Player : MonoBehaviour
         onGoldChanged?.Invoke();
     }
 
+    public void Push(Vector2 force)
+    {
+        rb.AddForce(force, ForceMode2D.Impulse);
+    }
+
     public void TakeDamage(int damage)
     {
         health -= damage;
@@ -232,8 +237,6 @@ public class Player : MonoBehaviour
 
             energy -= Time.deltaTime * energyDrainRate;
             energy = Mathf.Clamp(energy, 0, maxEnergy);
-
-            Debug.Log("Energy: " + energy);
 
             jumpGlow.SetActive(true);
         }
@@ -480,7 +483,6 @@ public class Player : MonoBehaviour
     {
         if (other.GetComponent<Lava>() != null)
         {
-            Debug.Log("Player entered lava");
             rb.drag = originalDrag * 50f;
             isInLava = true;
             lastLavaDamageTime = 0f;
@@ -491,7 +493,6 @@ public class Player : MonoBehaviour
     {
         if (other.GetComponent<Lava>() != null)
         {
-            Debug.Log("Player left lava");
             rb.drag = originalDrag;
             isInLava = false;
         }

@@ -434,8 +434,6 @@ public class BlockManager : MonoBehaviour
             }
         }
 
-        Debug.Log("Eligible blocks: " + eligibleBlocks.Count);
-
         // If no eligible blocks, return early
         if (eligibleBlocks.Count == 0)
             return;
@@ -460,8 +458,6 @@ public class BlockManager : MonoBehaviour
 
     void ConvertBlockToFallingBlock(Vector3Int position)
     {
-        Debug.Log("Converting block to falling block: " + position);
-
         if (!blockMap.ContainsKey(position))
             return;
 
@@ -544,16 +540,14 @@ public class BlockManager : MonoBehaviour
 
     void AddSpawnPlatform()
     {
-        RemoveTile(new Vector3Int(worldWidth / 2 - 3, worldHeight - numTopEmptyLayers, 0));
-        RemoveTile(new Vector3Int(worldWidth / 2 - 2, worldHeight - numTopEmptyLayers, 0));
-        RemoveTile(new Vector3Int(worldWidth / 2 + 1, worldHeight - numTopEmptyLayers, 0));
-        RemoveTile(new Vector3Int(worldWidth / 2 + 2, worldHeight - numTopEmptyLayers, 0));
-
-        RemoveTile(new Vector3Int(worldWidth / 2 - 2, worldHeight - numTopEmptyLayers - 1, 0));
-        RemoveTile(new Vector3Int(worldWidth / 2 - 1, worldHeight - numTopEmptyLayers - 1, 0));
-        RemoveTile(new Vector3Int(worldWidth / 2, worldHeight - numTopEmptyLayers - 1, 0));
-        RemoveTile(new Vector3Int(worldWidth / 2 + 1, worldHeight - numTopEmptyLayers - 1, 0));
-
+        AddTile(
+            new Vector3Int(worldWidth / 2 - 2, worldHeight - numTopEmptyLayers, 0),
+            barrierBlock
+        );
+        AddTile(
+            new Vector3Int(worldWidth / 2 + 1, worldHeight - numTopEmptyLayers, 0),
+            barrierBlock
+        );
         AddTile(
             new Vector3Int(worldWidth / 2 - 1, worldHeight - numTopEmptyLayers, 0),
             barrierBlock
@@ -780,12 +774,6 @@ public class BlockManager : MonoBehaviour
         Vector3Int blockGridPosition
     )
     {
-        Debug.Log("Getting projectile perimeter position");
-        Debug.Log("Block world position: " + blockWorldPosition);
-        Debug.Log("Projectile spawn position: " + projectileSpawnPosition);
-        Debug.Log("Block grid position: " + blockGridPosition);
-        Debug.Log("Projectile direction: " + projectileDirection);
-
         if (!blockMap.ContainsKey(blockGridPosition))
             return blockWorldPosition;
 
@@ -943,11 +931,8 @@ public class BlockManager : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        Debug.Log("Collision with " + other.gameObject.name);
         if (other.GetComponent<Lava>() != null)
         {
-            Debug.Log("BlockManager entered lava");
-
             for (int x = -1; x <= worldWidth; x++)
             {
                 Vector3Int position = new Vector3Int(x, lavaLevel, 0);

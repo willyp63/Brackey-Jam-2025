@@ -83,8 +83,6 @@ public class FallingBlock : MonoBehaviour
 
     private bool IsBlockAbovePlayer(Player player, Collision2D collision)
     {
-        Debug.Log("IsBlockAbovePlayer");
-
         // Get the colliders
         BoxCollider2D blockCollider = GetComponent<BoxCollider2D>();
         CapsuleCollider2D playerCollider = player.GetComponent<CapsuleCollider2D>();
@@ -100,8 +98,6 @@ public class FallingBlock : MonoBehaviour
         float playerTop =
             player.transform.position.y
             + (playerCollider.size.y * player.transform.localScale.y * 0.5f);
-
-        Debug.Log($"Block bottom: {blockBottom}, Player top: {playerTop}");
 
         // Check if block is above player
         if (blockBottom + 0.1f <= playerTop)

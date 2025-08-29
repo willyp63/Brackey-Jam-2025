@@ -13,6 +13,12 @@ public class Projectile : MonoBehaviour
     [SerializeField]
     private float rotationSpeed = 100f;
 
+    [SerializeField]
+    private float pushForce = 10f;
+
+    [SerializeField]
+    private bool isPlayerProjectile = true;
+
     private Vector2 direction;
     private float speed = 10f; // Default speed
     private float lifetime = 5f; // Default lifetime
@@ -64,12 +70,31 @@ public class Projectile : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        Debug.Log("OnTriggerEnter2D: " + other.name);
-
         if (isDestroyed)
             return;
 
         isDestroyed = true;
+
+        if (isPlayerProjectile)
+        {
+            // Try to deal damage to enemies
+            Enemy enemy = other.GetComponent<Enemy>();
+            if (enemy != null)
+            {
+                enemy.TakeDamage(damage);
+                enemy.Push(direction * pushForce);
+            }
+        }
+        else
+        {
+            // Try to deal damage to player
+            Player player = other.GetComponent<Player>();
+            if (player != null)
+            {
+                player.TakeDamage(damage);
+                player.Push(direction * pushForce);
+            }
+        }
 
         // Try to deal damage to falling blocks
         FallingBlock fallingBlock = other.GetComponent<FallingBlock>();
@@ -91,7 +116,6 @@ public class Projectile : MonoBehaviour
                 spawnPosition,
                 blockGridPosition
             );
-            Debug.Log("Perimeter position: " + perimeterPosition);
             transform.position = perimeterPosition;
         }
 

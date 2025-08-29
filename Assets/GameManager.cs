@@ -23,8 +23,6 @@ public class GameManager : MonoBehaviour
 
     void OnPlayerDeath()
     {
-        Debug.Log("Player died");
-
         StartCoroutine(RestartGame());
     }
 

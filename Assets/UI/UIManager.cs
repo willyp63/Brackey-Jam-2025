@@ -24,6 +24,11 @@ public class UIManager : MonoBehaviour
     [SerializeField]
     private List<TextMeshProUGUI> goldTexts;
 
+    [SerializeField]
+    private List<TextMeshProUGUI> clockTexts;
+
+    private float startTime;
+
     public void Start()
     {
         player.onHealthChanged += UpdateHealthUI;
@@ -31,11 +36,14 @@ public class UIManager : MonoBehaviour
         UpdateEnergyUI();
         UpdateHealthUI();
         UpdateGoldUI();
+
+        startTime = Time.time;
     }
 
     public void Update()
     {
         UpdateEnergyUI();
+        UpdateClockUI();
     }
 
     public void UpdateGoldUI()
@@ -70,6 +78,17 @@ public class UIManager : MonoBehaviour
         for (int i = 0; i < healthFillImages.Count; i++)
         {
             healthFillImages[i].enabled = i < player.Health;
+        }
+    }
+
+    private void UpdateClockUI()
+    {
+        for (int i = 0; i < clockTexts.Count; i++)
+        {
+            int numSeconds = (int)(Time.time - startTime);
+            int minutes = numSeconds / 60;
+            int seconds = numSeconds % 60;
+            clockTexts[i].text = $"{minutes:D2}:{seconds:D2}";
         }
     }
 }

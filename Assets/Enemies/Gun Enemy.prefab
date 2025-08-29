@@ -770,7 +770,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   visionRange: 6
-  attackRange: 4
+  attackRange: 3
   wanderSpeed: 0.25
   chaseSpeed: 0.5
   wanderChangeDirectionTime: 3

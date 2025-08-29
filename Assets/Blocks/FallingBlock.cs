@@ -79,6 +79,17 @@ public class FallingBlock : MonoBehaviour
                 DestroyBlock();
             }
         }
+
+        // Check for collision with Enemy
+        Enemy enemy = collision.gameObject.GetComponent<Enemy>();
+        if (enemy != null)
+        {
+            if (IsBlockAboveEnemy(enemy, collision))
+            {
+                enemy.TakeDamage(100);
+                DestroyBlock();
+            }
+        }
     }
 
     private bool IsBlockAbovePlayer(Player player, Collision2D collision)
@@ -101,6 +112,31 @@ public class FallingBlock : MonoBehaviour
 
         // Check if block is above player
         if (blockBottom + 0.1f <= playerTop)
+            return false;
+
+        return true;
+    }
+
+    private bool IsBlockAboveEnemy(Enemy enemy, Collision2D collision)
+    {
+        // Get the colliders
+        BoxCollider2D blockCollider = GetComponent<BoxCollider2D>();
+        CircleCollider2D enemyCollider = enemy.GetComponent<CircleCollider2D>();
+
+        if (blockCollider == null || enemyCollider == null)
+            return false;
+
+        // Calculate the bottom of the block
+        float blockBottom =
+            transform.position.y - (blockCollider.size.y * transform.localScale.y * 0.5f);
+
+        // Calculate the top of the enemy
+        float enemyTop =
+            enemy.transform.position.y
+            + (enemyCollider.radius * enemy.transform.localScale.y * 0.5f);
+
+        // Check if block is above enemy
+        if (blockBottom + 0.1f <= enemyTop)
             return false;
 
         return true;

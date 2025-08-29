@@ -78,6 +78,7 @@ public class BlockManager : MonoBehaviour
     public float initialLavaSpeed = 0.05f;
     public float lavaSpeedIncreaseAmount = 0.05f;
     public float lavaSpeedIncreaseInterval = 10f;
+    public float maxLavaSpeed = 0.2f;
 
     public int numTopEmptyLayers = 9;
 
@@ -184,6 +185,7 @@ public class BlockManager : MonoBehaviour
         {
             lastLavaSpeedIncreaseTime = Time.time;
             currentLavaSpeed += lavaSpeedIncreaseAmount;
+            currentLavaSpeed = Mathf.Min(currentLavaSpeed, maxLavaSpeed);
             lava.SetMoveSpeed(currentLavaSpeed);
         }
 

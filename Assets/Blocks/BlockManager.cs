@@ -285,6 +285,7 @@ public class BlockManager : MonoBehaviour
             worldSpawnPosition,
             Quaternion.identity
         );
+        enemy.GetComponent<Enemy>().Initialize(this);
         if (isBladeEnemy)
             activeBladeEnemies.Add(enemy);
         else
@@ -883,18 +884,18 @@ public class BlockManager : MonoBehaviour
         {
             Vector3 worldPosition = tilemap.GetCellCenterWorld(position);
             SpawnBlockDestroyEffect(worldPosition, block.blockData);
-            SpawnLoot(worldPosition, block.blockData);
+            SpawnLoot(worldPosition, block.blockData.minGoldDrop, block.blockData.maxGoldDrop);
         }
 
         RemoveTile(position);
     }
 
-    public void SpawnLoot(Vector3 worldPosition, BlockData blockData)
+    public void SpawnLoot(Vector3 worldPosition, int minGoldDrop, int maxGoldDrop)
     {
-        if (blockData.minGoldDrop <= 0)
+        if (minGoldDrop <= 0 && maxGoldDrop <= 0)
             return;
 
-        int goldDrop = Random.Range(blockData.minGoldDrop, blockData.maxGoldDrop + 1);
+        int goldDrop = Random.Range(minGoldDrop, maxGoldDrop + 1);
         for (int i = 0; i < goldDrop; i++)
         {
             Vector3 goldNugWorldPosition =

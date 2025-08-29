@@ -588,6 +588,8 @@ MonoBehaviour:
   wanderChangeDirectionTime: 3
   wallDetectionDistance: 0.5
   initialHealth: 100
+  minGoldDrop: 3
+  maxGoldDrop: 5
   spriteRenderers:
   - {fileID: 5070744549931691510}
   hurtColor: {r: 1, g: 0.627451, b: 0.627451, a: 1}

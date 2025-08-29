@@ -155,7 +155,11 @@ public class FallingBlock : MonoBehaviour
         if (blockManager.IsBlockOnScreen(transform.position))
         {
             blockManager.SpawnBlockDestroyEffect(transform.position, blockData);
-            blockManager.SpawnLoot(transform.position, blockData);
+            blockManager.SpawnLoot(
+                transform.position,
+                blockData.minGoldDrop,
+                blockData.maxGoldDrop
+            );
         }
 
         Destroy(gameObject);

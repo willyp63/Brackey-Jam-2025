@@ -29,6 +29,13 @@ public abstract class Enemy : MonoBehaviour
     [SerializeField]
     private int initialHealth = 100;
 
+    [Header("Loot")]
+    [SerializeField]
+    private int minGoldDrop = 1;
+
+    [SerializeField]
+    private int maxGoldDrop = 2;
+
     [Header("Misc")]
     [SerializeField]
     private List<SpriteRenderer> spriteRenderers;
@@ -44,6 +51,8 @@ public abstract class Enemy : MonoBehaviour
     private bool canSeePlayer;
     private bool isWithinAttackRange;
     private Color originalColor;
+    private BlockManager blockManager;
+    private bool isDead = false;
 
     private int health = 0;
     private int maxHealth = 1;
@@ -52,6 +61,11 @@ public abstract class Enemy : MonoBehaviour
 
     public System.Action onDeath;
     public System.Action onHealthChanged;
+
+    public void Initialize(BlockManager blockManager)
+    {
+        this.blockManager = blockManager;
+    }
 
     protected virtual void FacePlayer(bool canSeePlayer)
     {
@@ -100,15 +114,21 @@ public abstract class Enemy : MonoBehaviour
 
     public void TakeDamage(int damage)
     {
+        if (isDead)
+            return;
+
         health -= damage;
         onHealthChanged?.Invoke();
 
-        bool isDead = health <= 0;
+        isDead = health <= 0;
         StartCoroutine(HurtAnimation(isDead));
 
         if (isDead)
         {
             rb.gravityScale = 2f;
+
+            blockManager.SpawnLoot(transform.position, minGoldDrop, maxGoldDrop);
+
             onDeath?.Invoke();
             Destroy(gameObject, 0.5f);
         }

@@ -544,13 +544,21 @@ public class BlockManager : MonoBehaviour
 
     void AddSpawnPlatform()
     {
-        for (int x = -2; x < 2; x++)
-        {
-            AddTile(
-                new Vector3Int(worldWidth / 2 + x, worldHeight - numTopEmptyLayers, 0),
-                barrierBlock
-            );
-        }
+        RemoveTile(new Vector3Int(worldWidth / 2 - 3, worldHeight - numTopEmptyLayers, 0));
+        RemoveTile(new Vector3Int(worldWidth / 2 - 2, worldHeight - numTopEmptyLayers, 0));
+        RemoveTile(new Vector3Int(worldWidth / 2 + 1, worldHeight - numTopEmptyLayers, 0));
+        RemoveTile(new Vector3Int(worldWidth / 2 + 2, worldHeight - numTopEmptyLayers, 0));
+
+        RemoveTile(new Vector3Int(worldWidth / 2 - 2, worldHeight - numTopEmptyLayers - 1, 0));
+        RemoveTile(new Vector3Int(worldWidth / 2 - 1, worldHeight - numTopEmptyLayers - 1, 0));
+        RemoveTile(new Vector3Int(worldWidth / 2, worldHeight - numTopEmptyLayers - 1, 0));
+        RemoveTile(new Vector3Int(worldWidth / 2 + 1, worldHeight - numTopEmptyLayers - 1, 0));
+
+        AddTile(
+            new Vector3Int(worldWidth / 2 - 1, worldHeight - numTopEmptyLayers, 0),
+            barrierBlock
+        );
+        AddTile(new Vector3Int(worldWidth / 2, worldHeight - numTopEmptyLayers, 0), barrierBlock);
     }
 
     void AddTile(Vector3Int position, BlockData blockData)

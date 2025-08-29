@@ -465,7 +465,6 @@ MonoBehaviour:
   projectileDamage: 25
   fireRate: 0.2
   canFireContinuously: 1
-  projectileEnergyCost: 0.025
   pickupRadius: 3
   pickupForce: 0.05
   initialEnergy: 3

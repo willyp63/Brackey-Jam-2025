@@ -77,9 +77,6 @@ public class Player : MonoBehaviour
     [SerializeField]
     private bool canFireContinuously = true;
 
-    [SerializeField]
-    private float projectileEnergyCost = 0.1f;
-
     [Header("Loot")]
     [SerializeField]
     private float pickupRadius = 1f;
@@ -245,11 +242,8 @@ public class Player : MonoBehaviour
             rb.gravityScale = originalGravityScale;
             jumpGlow.SetActive(false);
 
-            if (Time.time > lastFireTime + fireRate + 0.2f)
-            {
-                energy += Time.deltaTime * energyRegenRate;
-                energy = Mathf.Clamp(energy, 0, maxEnergy);
-            }
+            energy += Time.deltaTime * energyRegenRate;
+            energy = Mathf.Clamp(energy, 0, maxEnergy);
         }
 
         // Fire projectile input
@@ -438,13 +432,9 @@ public class Player : MonoBehaviour
         if (projectilePrefab == null)
             return;
 
-        if (energy < projectileEnergyCost)
-            return;
-
         if (Time.time < lastFireTime + fireRate)
             return;
 
-        energy -= projectileEnergyCost;
         lastFireTime = Time.time;
 
         // Get mouse position in world space

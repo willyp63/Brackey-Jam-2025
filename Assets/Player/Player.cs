@@ -210,14 +210,14 @@ public class Player : MonoBehaviour
 
     IEnumerator HurtAnimation(bool isDead)
     {
-        Time.timeScale = 0.2f;
+        GameManager.Instance.SetTimeScale(0.2f);
         animator.SetTrigger(isDead ? "Death" : "Hurt");
         spriteRenderer.color = hurtColor;
         damageShakeEffect.Shake();
 
         yield return new WaitForSecondsRealtime(0.2f);
 
-        Time.timeScale = 1f;
+        GameManager.Instance.SetTimeScale(1f);
         if (!isDead)
             animator.SetTrigger("EndHurt");
         spriteRenderer.color = originalColor;

@@ -2,9 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class UIManager : MonoBehaviour
+public class UIManager : Singleton<UIManager>
 {
     [SerializeField]
     private Player player;
@@ -27,10 +28,23 @@ public class UIManager : MonoBehaviour
     [SerializeField]
     private List<TextMeshProUGUI> clockTexts;
 
+    [Header("Game Over")]
+    [SerializeField]
+    private GameObject gameOverPanel;
+
+    [SerializeField]
+    private List<TextMeshProUGUI> gameOverScoreTexts;
+
+    [SerializeField]
+    private Button restartButton;
+
     private float startTime;
 
     public void Start()
     {
+        restartButton.onClick.AddListener(RestartGame);
+        gameOverPanel.SetActive(false);
+
         player.onHealthChanged += UpdateHealthUI;
         player.onGoldChanged += UpdateGoldUI;
         UpdateEnergyUI();
@@ -44,6 +58,20 @@ public class UIManager : MonoBehaviour
     {
         UpdateEnergyUI();
         UpdateClockUI();
+    }
+
+    void RestartGame()
+    {
+        GameManager.Instance.RestartGame();
+    }
+
+    public void ShowGameOver(int finalScore, bool isDead)
+    {
+        gameOverPanel.SetActive(true);
+        for (int i = 0; i < gameOverScoreTexts.Count; i++)
+        {
+            gameOverScoreTexts[i].text = isDead ? "YOU DIED" : $"YOU GAINED\n{finalScore} GOLD";
+        }
     }
 
     public void UpdateGoldUI()

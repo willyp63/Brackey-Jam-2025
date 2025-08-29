@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 
-public class GameManager : MonoBehaviour
+public class GameManager : Singleton<GameManager>
 {
     [SerializeField]
     private Player player;
@@ -15,6 +15,8 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private float lightIntensity = 1f;
 
+    private bool isGameOver = false;
+
     void Start()
     {
         globalLight.intensity = lightIntensity;
@@ -23,12 +25,27 @@ public class GameManager : MonoBehaviour
 
     void OnPlayerDeath()
     {
-        StartCoroutine(RestartGame());
+        EndGame(true);
     }
 
-    IEnumerator RestartGame()
+    public void EndGame(bool isDead)
     {
-        yield return new WaitForSeconds(1f);
+        isGameOver = true;
+        Time.timeScale = 0f;
+        UIManager.Instance.ShowGameOver(player.Gold, isDead);
+    }
+
+    public void RestartGame()
+    {
+        Time.timeScale = 1f;
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    public void SetTimeScale(float timeScale)
+    {
+        if (isGameOver)
+            return;
+
+        Time.timeScale = timeScale;
     }
 }

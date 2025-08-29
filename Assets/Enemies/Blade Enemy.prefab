@@ -583,8 +583,8 @@ MonoBehaviour:
     m_Bits: 64
   visionRange: 6
   attackRange: 2
-  wanderSpeed: 0.2
-  chaseSpeed: 0.4
+  wanderSpeed: 0.25
+  chaseSpeed: 0.5
   wanderChangeDirectionTime: 3
   wallDetectionDistance: 0.5
   initialHealth: 100
@@ -593,8 +593,8 @@ MonoBehaviour:
   spriteRenderers:
   - {fileID: 5070744549931691510}
   hurtColor: {r: 1, g: 0.627451, b: 0.627451, a: 1}
-  chargeForce: 3
-  attackPushForce: 3
+  chargeForce: 3.5
+  attackPushForce: 3.5
   attackCooldown: 2
 --- !u!58 &5183653890118717662
 CircleCollider2D:

@@ -91,10 +91,17 @@ public class Player : MonoBehaviour
 
     [Header("Energy")]
     [SerializeField]
+    private int initialEnergy = 3;
+
+    [SerializeField]
     private float energyRegenRate = 0.1f;
 
     [SerializeField]
     private float energyDrainRate = 0.1f;
+
+    [Header("Health")]
+    [SerializeField]
+    private int initialHealth = 3;
 
     [Header("Misc")]
     [SerializeField]
@@ -121,12 +128,12 @@ public class Player : MonoBehaviour
     private float lastLavaDamageTime = 0f;
 
     private int health = 0;
-    private int maxHealth = 4;
+    private int maxHealth = 1;
     public int Health => health;
     public int MaxHealth => maxHealth;
 
     private float energy = 0;
-    private int maxEnergy = 4;
+    private int maxEnergy = 1;
     public float Energy => energy;
     public int MaxEnergy => maxEnergy;
 
@@ -147,8 +154,11 @@ public class Player : MonoBehaviour
         jumpGlow.SetActive(false);
         damageShakeEffect = Camera.main.GetComponent<ShakeBehavior>();
 
-        energy = maxEnergy;
-        health = maxHealth;
+        maxEnergy = initialEnergy;
+        energy = initialEnergy;
+
+        maxHealth = initialHealth;
+        health = initialHealth;
         onHealthChanged?.Invoke();
 
         gold = 0;
@@ -171,6 +181,7 @@ public class Player : MonoBehaviour
 
         if (isDead)
         {
+            rb.gravityScale = originalGravityScale * 2f;
             onDeath?.Invoke();
         }
     }
@@ -224,6 +235,8 @@ public class Player : MonoBehaviour
 
             energy -= Time.deltaTime * energyDrainRate;
             energy = Mathf.Clamp(energy, 0, maxEnergy);
+
+            Debug.Log("Energy: " + energy);
 
             jumpGlow.SetActive(true);
         }

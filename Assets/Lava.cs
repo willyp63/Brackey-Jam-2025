@@ -35,17 +35,20 @@ public class Lava : MonoBehaviour
     private List<GameObject> activeFireballs = new List<GameObject>();
     private float originalYPosition;
 
+    private float currentMoveSpeed = 0f;
+
     // Start is called before the first frame update
     void Start()
     {
         originalYPosition = transform.position.y;
+        currentMoveSpeed = moveSpeed;
     }
 
     // Update is called once per frame
     void Update()
     {
         // Move the lava upward at a constant speed
-        transform.Translate(Vector3.up * moveSpeed * Time.deltaTime);
+        transform.Translate(Vector3.up * currentMoveSpeed * Time.deltaTime);
 
         // Launch fireballs at regular intervals
         if (Time.time - lastFireballLaunchTime >= fireballLaunchInterval)
@@ -56,6 +59,11 @@ public class Lava : MonoBehaviour
 
         // Check and cleanup fireballs that have returned to original Y position
         CleanupFireballs();
+    }
+
+    public void SetMoveSpeed(float moveSpeed)
+    {
+        currentMoveSpeed = moveSpeed;
     }
 
     void LaunchFireball()

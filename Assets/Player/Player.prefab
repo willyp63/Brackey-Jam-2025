@@ -468,8 +468,10 @@ MonoBehaviour:
   projectileEnergyCost: 0.025
   pickupRadius: 3
   pickupForce: 0.05
+  initialEnergy: 3
   energyRegenRate: 0.66
   energyDrainRate: 1
+  initialHealth: 3
   jumpGlow: {fileID: 4419634933917850436}
   spriteRenderer: {fileID: 1299309684889584598}
   hurtColor: {r: 1, g: 0.627451, b: 0.627451, a: 1}

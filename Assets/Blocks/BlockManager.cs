@@ -30,6 +30,7 @@ public class BlockManager : MonoBehaviour
     [Header("Tiles")]
     public BlockData dirtBlock;
     public BlockData iceBlock;
+    public BlockData magmaBlock;
     public BlockData stoneBlock;
     public BlockData oreBlock;
     public BlockData largeOreBlock;
@@ -46,13 +47,21 @@ public class BlockManager : MonoBehaviour
 
     public float dirtNoiseScale = 0.1f;
     public float dirtThreshold = 0.5f;
+    public float dirtThresholdIncreaseAmount = 0.2f;
 
     public float iceNoiseScale = 0.1f;
     public float iceThreshold = 0.6f;
+    public float iceThresholdIncreaseAmount = 0.4f;
+
+    public float magmaNoiseScale = 0.1f;
+    public float magmaThreshold = 0.6f;
+    public float magmaThresholdDecreaseAmount = 0.4f;
 
     public float oreNoiseScale = 0.1f;
     public float oreThreshold = 0.7f;
     public float largeOreThreshold = 0.8f;
+    public float oreThresholdDecreaseAmount = 0.2f;
+    public float largeOreThresholdDecreaseAmount = 0.2f;
 
     public float caveNoiseScale = 0.05f;
     public float caveThreshold = 0.8f;
@@ -63,6 +72,12 @@ public class BlockManager : MonoBehaviour
     public float damageThresholdDecreaseAmount = 0.1f;
     public float damageInterval = 5f;
     public float damageIntervalDecreaseAmount = 0.1f;
+
+    [Header("Lava Settings")]
+    public Lava lava;
+    public float initialLavaSpeed = 0.05f;
+    public float lavaSpeedIncreaseAmount = 0.05f;
+    public float lavaSpeedIncreaseInterval = 10f;
 
     public int numTopEmptyLayers = 9;
 
@@ -83,15 +98,20 @@ public class BlockManager : MonoBehaviour
     private float currentMinDamageThreshold = 0f;
     private float currentMaxDamageThreshold = 0f;
     private float currentDamageInterval = 0f;
+    private float currentLavaSpeed = 0f;
     private int lavaLevel = -1;
     private float lastFallingBlockTime = 0f;
+    private float lastLavaSpeedIncreaseTime = 0f;
 
     void Start()
     {
         currentMinDamageThreshold = minDamageThreshold;
         currentMaxDamageThreshold = maxDamageThreshold;
         currentDamageInterval = damageInterval;
+
         lavaLevel = -1;
+        currentLavaSpeed = initialLavaSpeed;
+        lava.SetMoveSpeed(currentLavaSpeed);
 
         InitializeTileMap();
         GenerateWorld();
@@ -122,6 +142,13 @@ public class BlockManager : MonoBehaviour
             lastFallingBlockTime = Time.time;
             ConvertBlocksToFallingBlocks();
         }
+
+        if (Time.time - lastLavaSpeedIncreaseTime > lavaSpeedIncreaseInterval)
+        {
+            lastLavaSpeedIncreaseTime = Time.time;
+            currentLavaSpeed += lavaSpeedIncreaseAmount;
+            lava.SetMoveSpeed(currentLavaSpeed);
+        }
     }
 
     void InitializeTileMap()
@@ -129,6 +156,7 @@ public class BlockManager : MonoBehaviour
         tileMap.Clear();
         tileMap[dirtBlock] = CreateTile(dirtBlock.sprite);
         tileMap[iceBlock] = CreateTile(iceBlock.sprite);
+        tileMap[magmaBlock] = CreateTile(magmaBlock.sprite);
         tileMap[stoneBlock] = CreateTile(stoneBlock.sprite);
         tileMap[oreBlock] = CreateTile(oreBlock.sprite);
         tileMap[largeOreBlock] = CreateTile(largeOreBlock.sprite);
@@ -198,6 +226,7 @@ public class BlockManager : MonoBehaviour
         float dirtNoiseOffset = Random.Range(0f, 1000f);
         float iceNoiseOffset = Random.Range(0f, 1000f);
         float oreNoiseOffset = Random.Range(0f, 1000f);
+        float magmaNoiseOffset = Random.Range(0f, 1000f);
 
         for (int x = 0; x < worldWidth; x++)
         {
@@ -214,13 +243,28 @@ public class BlockManager : MonoBehaviour
                     (x + iceNoiseOffset) * iceNoiseScale,
                     (y + iceNoiseOffset) * iceNoiseScale
                 );
+                float magmaNoise = Mathf.PerlinNoise(
+                    (x + magmaNoiseOffset) * magmaNoiseScale,
+                    (y + magmaNoiseOffset) * magmaNoiseScale
+                );
                 float oreNoise = Mathf.PerlinNoise(
                     (x + oreNoiseOffset) * oreNoiseScale,
                     (y + oreNoiseOffset) * oreNoiseScale
                 );
 
-                // Determine block type based on noise values and position
-                BlockData blockType = DetermineBlockType(x, y, dirtNoise, iceNoise, oreNoise);
+                // Calculate depth factor for ore generation (more ore at lower y coordinates)
+                float depthFactor = 1f - (float)y / worldHeight; // 1.0 at bottom, 0.0 at top
+
+                // Determine block type based on noise values, position, and depth
+                BlockData blockType = DetermineBlockType(
+                    x,
+                    y,
+                    dirtNoise,
+                    iceNoise,
+                    magmaNoise,
+                    oreNoise,
+                    depthFactor
+                );
 
                 // Only replace stone blocks with new terrain
                 if (blockType != stoneBlock)
@@ -231,26 +275,50 @@ public class BlockManager : MonoBehaviour
         }
     }
 
-    BlockData DetermineBlockType(int x, int y, float dirtNoise, float iceNoise, float oreNoise)
+    BlockData DetermineBlockType(
+        int x,
+        int y,
+        float dirtNoise,
+        float iceNoise,
+        float magmaNoise,
+        float oreNoise,
+        float depthFactor
+    )
     {
         // Ore generation (deeper = more common)
-        if (oreNoise > largeOreThreshold)
+        // Apply depth factor to make ore more common at lower y coordinates
+        float adjustedOreThreshold = oreThreshold - (depthFactor * oreThresholdDecreaseAmount); // Lower threshold at depth
+        float adjustedLargeOreThreshold =
+            largeOreThreshold - (depthFactor * largeOreThresholdDecreaseAmount); // Lower threshold at depth
+        float adjustedIceThreshold = iceThreshold + (depthFactor * iceThresholdIncreaseAmount);
+        float adjustedMagmaThreshold =
+            magmaThreshold - (depthFactor * magmaThresholdDecreaseAmount);
+        float adjustedDirtThreshold = dirtThreshold + (depthFactor * dirtThresholdIncreaseAmount);
+
+        if (oreNoise > adjustedLargeOreThreshold)
         {
             return largeOreBlock;
         }
-        else if (oreNoise > oreThreshold)
+
+        if (oreNoise > adjustedOreThreshold)
         {
             return oreBlock;
         }
 
         // Ice generation (more common in certain areas)
-        if (iceNoise > iceThreshold)
+        if (iceNoise > adjustedIceThreshold)
         {
             return iceBlock;
         }
 
+        // Magma generation (more common in certain areas)
+        if (magmaNoise > adjustedMagmaThreshold)
+        {
+            return magmaBlock;
+        }
+
         // Dirt generation (more common near the "surface" areas)
-        if (dirtNoise > dirtThreshold)
+        if (dirtNoise > adjustedDirtThreshold)
         {
             return dirtBlock;
         }
@@ -346,10 +414,15 @@ public class BlockManager : MonoBehaviour
             for (int y = 0; y < worldHeight; y++)
             {
                 Vector3Int position = new Vector3Int(x, y, 0);
-                Vector3Int belowPosition = new Vector3Int(x, y - 1, 0);
+                Vector3Int belowPosition0 = new Vector3Int(x, y - 1, 0);
+                Vector3Int belowPosition1 = new Vector3Int(x, y - 2, 0);
 
                 // Check if there's a block at this position and no block below it
-                if (blockMap.ContainsKey(position) && !blockMap.ContainsKey(belowPosition))
+                if (
+                    blockMap.ContainsKey(position)
+                    && !blockMap.ContainsKey(belowPosition0)
+                    && !blockMap.ContainsKey(belowPosition1)
+                )
                 {
                     // Skip barrier blocks and indestructible blocks
                     Block block = blockMap[position];

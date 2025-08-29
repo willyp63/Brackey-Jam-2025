@@ -28,19 +28,14 @@ public class UIManager : MonoBehaviour
     {
         player.onHealthChanged += UpdateHealthUI;
         player.onGoldChanged += UpdateGoldUI;
+        UpdateEnergyUI();
         UpdateHealthUI();
-        UpdateEnergyUISprites();
         UpdateGoldUI();
     }
 
     public void Update()
     {
         UpdateEnergyUI();
-
-        if (Input.GetKeyDown(KeyCode.H))
-        {
-            player.TakeDamage(1);
-        }
     }
 
     public void UpdateGoldUI()
@@ -53,11 +48,6 @@ public class UIManager : MonoBehaviour
 
     public void UpdateEnergyUI()
     {
-        energyFillImages[player.MaxEnergy - 1].fillAmount = player.Energy / player.MaxEnergy;
-    }
-
-    public void UpdateEnergyUISprites()
-    {
         for (int i = 0; i < energyFrameImages.Count; i++)
         {
             energyFrameImages[i].enabled = i == player.MaxEnergy - 1;
@@ -66,6 +56,7 @@ public class UIManager : MonoBehaviour
         for (int i = 0; i < energyFillImages.Count; i++)
         {
             energyFillImages[i].enabled = i == player.MaxEnergy - 1;
+            energyFillImages[i].fillAmount = player.Energy / player.MaxEnergy;
         }
     }
 

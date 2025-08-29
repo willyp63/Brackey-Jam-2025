@@ -837,6 +837,15 @@ public class BlockManager : MonoBehaviour
         return blockMap[gridPosition].blockData.friction;
     }
 
+    public bool IsMagma(Vector3 worldPosition)
+    {
+        Vector3Int gridPosition = GetNearestBlockPosition(worldPosition);
+        if (!blockMap.ContainsKey(gridPosition))
+            return false;
+
+        return blockMap[gridPosition].blockData.isMagma;
+    }
+
     public Vector3Int DamageBlock(Vector3 worldPosition, int damage)
     {
         Vector3Int gridPosition = GetNearestBlockPosition(worldPosition);

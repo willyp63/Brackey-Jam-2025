@@ -131,8 +131,11 @@ public class Player : MonoBehaviour
     private float originalDrag;
     private Color originalColor;
     private ShakeBehavior damageShakeEffect;
+    private bool isInMagma = false;
     private bool isInLava = false;
     private float lastLavaDamageTime = 0f;
+    private float lastMagmaDamageTime = 0f;
+    private float enterMagmaTime = 0f;
     private float lastHurtTime = 0f;
     private Vector2 previousVelocity;
 
@@ -240,6 +243,16 @@ public class Player : MonoBehaviour
             lastLavaDamageTime = Time.time;
         }
 
+        if (
+            isInMagma
+            && Time.time > enterMagmaTime + 0.25f
+            && Time.time > lastMagmaDamageTime + 0.5f
+        )
+        {
+            TakeDamage(1);
+            lastMagmaDamageTime = Time.time;
+        }
+
         if ((Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.W)) && energy > 0.1f)
         {
             rb.gravityScale = originalGravityScale * jumpHoldGravityScale;
@@ -336,8 +349,10 @@ public class Player : MonoBehaviour
     void CheckGrounded()
     {
         bool wasGrounded = isGrounded;
+        bool wasInMagma = isInMagma;
         isGrounded = false;
         friction = 1f;
+        isInMagma = false;
 
         foreach (Transform groundCheck in groundChecks)
         {
@@ -355,10 +370,16 @@ public class Player : MonoBehaviour
                 if (blockManager != null)
                 {
                     friction = blockManager.GetFriction(groundCheck.position);
+                    isInMagma = blockManager.IsMagma(groundCheck.position);
                 }
 
                 break;
             }
+        }
+
+        if (!wasInMagma && isInMagma)
+        {
+            enterMagmaTime = Time.time;
         }
 
         // Check for fall damage when landing

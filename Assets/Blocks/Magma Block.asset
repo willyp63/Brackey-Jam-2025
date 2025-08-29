@@ -19,3 +19,4 @@ MonoBehaviour:
   friction: 0
   minGoldDrop: 0
   maxGoldDrop: 0
+  isMagma: 1

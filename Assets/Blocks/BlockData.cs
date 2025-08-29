@@ -13,4 +13,5 @@ public class BlockData : ScriptableObject
     public float friction;
     public int minGoldDrop;
     public int maxGoldDrop;
+    public bool isMagma;
 }
